@@ -1,3 +1,6 @@
+# Misc
+.bash_history
+
 # Data files and directories common in repo root
 datasets/
 logs/
