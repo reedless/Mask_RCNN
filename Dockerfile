@@ -134,5 +134,5 @@ RUN pip3 install --no-cache-dir git+https://github.com/waleedka/coco.git#subdire
 RUN pip3 install --upgrade pip
 RUN pip3 install --no-cache-dir imgaug jsonschema==2.6.0 jupyter-client==6.1.12
 
-WORKDIR "/root"
+WORKDIR "/host"
 CMD ["/bin/bash"]
