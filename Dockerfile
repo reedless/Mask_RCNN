@@ -1,10 +1,11 @@
+# sudo docker build -t mask_rcnn -f Dockerfile .
+
 # TODO:
-# pip install --upgrade pip
+# pip3 install --upgrade pip
 # pip3 install imgaug
 # pip install numpy==1.17.0
 
 FROM ubuntu:16.04
-LABEL name Waleed Abdulla <waleed.abdulla@gmail.com>
 
 # Supress warnings about missing front-end. As recommended at:
 # http://stackoverflow.com/questions/22466255/is-it-possibe-to-answer-dialog-questions-when-installing-under-docker
@@ -21,23 +22,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 #
 # For convenience, alias (but don't sym-link) python & pip to python3 & pip3 as recommended in:
 # http://askubuntu.com/questions/351318/changing-symlink-python-to-python3-causes-problems
-RUN apt-get install -y --no-install-recommends python3.5 python3.5-dev python3-pip python3-tk && \
-    pip3 install --no-cache-dir --upgrade pip setuptools && \
+#
+# Get version specific pip as pip as dropped support for Python 2 and 3.5
+RUN apt-get install -y --no-install-recommends python3.5 python3.5-dev python3-pip python3-tk python3-wheel && \
+    pip3 install --no-cache-dir --upgrade "pip < 9.0.4" "setuptools < 40.0.0" && \
     echo "alias python='python3'" >> /root/.bash_aliases && \
     echo "alias pip='pip3'" >> /root/.bash_aliases
 # Pillow and it's dependencies
-RUN apt-get install -y --no-install-recommends libjpeg-dev zlib1g-dev && \
-    pip3 --no-cache-dir install Pillow
+RUN apt-get install -y --no-install-recommends libjpeg-dev zlib1g-dev
+RUN pip3 install --no-cache-dir Pillow
 # Science libraries and other common packages
-RUN pip3 --no-cache-dir install \
-    numpy scipy sklearn scikit-image pandas matplotlib Cython requests
+RUN pip3 install --no-cache-dir \
+    wheel numpy==1.17.0 scipy scikit-learn==0.19 scikit-image pandas matplotlib Cython requests
 
 #
 # Jupyter Notebook
 #
 # Allow access from outside the container, and skip trying to open a browser.
 # NOTE: disable authentication token for convenience. DON'T DO THIS ON A PUBLIC SERVER.
-RUN pip3 --no-cache-dir install jupyter && \
+RUN apt-get install -y --no-install-recommends libffi-dev
+RUN pip3 install --no-cache-dir jupyter && \
     mkdir /root/.jupyter && \
     echo "c.NotebookApp.ip = '*'" \
          "\nc.NotebookApp.open_browser = False" \
@@ -108,7 +112,7 @@ RUN apt-get install -y --no-install-recommends default-jdk
 #
 # Keras 2.1.5
 #
-RUN pip3 install --no-cache-dir --upgrade h5py pydot_ng keras
+RUN pip3 install --no-cache-dir --upgrade h5py pydot_ng keras==2.1.5
 
 #
 # PyTorch 0.3.1
@@ -123,6 +127,12 @@ RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.3.1-cp35-cp35m-linu
 # I submitted a PR to the original repo (https://github.com/cocodataset/cocoapi/pull/50)
 # but it doesn't seem to be active anymore.
 RUN pip3 install --no-cache-dir git+https://github.com/waleedka/coco.git#subdirectory=PythonAPI
+
+# 
+# Upgrade pip3 to latest version and install imgaug, downgrade jsonschema and jupyter-client
+#
+RUN pip3 install --upgrade pip
+RUN pip3 install --no-cache-dir imgaug jsonschema==2.6.0 jupyter-client==6.1.12
 
 WORKDIR "/root"
 CMD ["/bin/bash"]
