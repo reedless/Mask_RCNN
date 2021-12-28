@@ -2,6 +2,9 @@ import os
 import sys
 import numpy as np
 import cv2
+import warnings
+
+warnings.filterwarnings("ignore")
 
 ROOT_DIR = os.path.abspath("../")
 
@@ -69,13 +72,14 @@ class WatermarkDataset(utils.Dataset):
         assert subset in ["train", "val"]
         dataset_dir = os.path.join(root_dataset_dir, subset, 'input')
 
-        # Get image ids from directory
-        image_ids = next(os.walk(dataset_dir))[2]
+        # Get image ids from mask directory (saves time)
+        watermark_mask_dir = os.path.join(root_dataset_dir, subset, 'mask_watermark')
+        image_ids = next(os.walk(watermark_mask_dir))[2]
         print("Size of {} dataset: {}".format(subset, len(image_ids)))
 
         # Add images
         for image_id in image_ids:
-            watermark_mask_file = os.path.join(root_dataset_dir, subset, 'mask_watermark', image_id)
+            watermark_mask_file = os.path.join(watermark_mask_dir, image_id)
             word_mask_file = os.path.join(root_dataset_dir, subset, 'mask_word', image_id)
             if os.path.isfile(watermark_mask_file) and os.path.isfile(word_mask_file):
                 self.add_image(
@@ -184,7 +188,7 @@ if __name__ == '__main__':
     parser.add_argument('--logs', required=False,
                         default=DEFAULT_LOGS_DIR,
                         metavar="/path/to/logs/",
-                        help='Logs and checkpoints directory (default=logs/)')
+                        help='Logs and checkpoints directory (default=/logs/)')
     args = parser.parse_args()
 
     # Validate arguments
