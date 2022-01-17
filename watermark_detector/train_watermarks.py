@@ -53,6 +53,9 @@ class WatermarkConfig(Config):
     # Supported values are: resnet50, resnet101
     BACKBONE = "resnet50"
 
+    # Problems w resizing when performing negative mining
+    USE_MINI_MASK = False
+
 ############################################################
 #  Dataset
 ############################################################
@@ -114,7 +117,9 @@ class WatermarkDataset(utils.Dataset):
         
         # if mask files do not exist, return empty masks and background id
         if watermark_mask_file is None and word_mask_file is None:
-            return np.zeros([info["height"], info["width"], 1], dtype=np.uint8), [0]
+            img = cv2.imread(info['path'])
+            img_width, img_height, _ = img.shape
+            return np.zeros([img_height, img_width, 1], dtype=np.uint8), np.zeros([1], dtype=np.int32)
 
         # Read mask files from disk
         watermark_mask_img = cv2.imread(watermark_mask_file, cv2.IMREAD_GRAYSCALE)
@@ -183,6 +188,8 @@ def train(model):
 #     print("Testing implemented in predict_watermarks.py")
 #     print(model)
 
+# python train_watermark.py --weights=coco
+
 if __name__ == '__main__':
     import argparse
 
@@ -228,9 +235,9 @@ if __name__ == '__main__':
     config.display()
 
     # Create model
-    if args.command == "train":
-        model = modellib.MaskRCNN(mode="training", config=config,
-                                  model_dir=args.logs)
+    # if args.command == "train":
+    model = modellib.MaskRCNN(mode="training", config=config,
+                                model_dir=args.logs)
     # else:
     #     model = modellib.MaskRCNN(mode="inference", config=config,
     #                               model_dir=args.logs)

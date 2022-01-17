@@ -1260,9 +1260,10 @@ def load_image_gt(dataset, config, image_id, augment=False, augmentation=None,
 
     # Note that some boxes might be all zeros if the corresponding mask got cropped out.
     # and here is to filter them out
-    _idx = np.sum(mask, axis=(0, 1)) > 0
-    mask = mask[:, :, _idx]
-    class_ids = class_ids[_idx]
+    # NOTE: Don't filter out so we can perform negative mining
+    # _idx = np.sum(mask, axis=(0, 1)) > 0
+    # mask = mask[:, :, _idx]
+    # class_ids = class_ids[_idx]
     # Bounding boxes. Note that some boxes might be all zeros
     # if the corresponding mask got cropped out.
     # bbox: [num_instances, (y1, x1, y2, x2)]
@@ -1708,11 +1709,11 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
                                 augmentation=augmentation,
                                 use_mini_mask=config.USE_MINI_MASK)
 
-            # Skip images that have no instances. This can happen in cases
-            # where we train on a subset of classes and the image doesn't
-            # have any of the classes we care about.
-            if not np.any(gt_class_ids > 0):
-                continue
+            # # Skip images that have no instances. This can happen in cases
+            # # where we train on a subset of classes and the image doesn't
+            # # have any of the classes we care about.
+            # if not np.any(gt_class_ids > 0):
+            #     continue
 
             # RPN Targets
             rpn_match, rpn_bbox = build_rpn_targets(image.shape, anchors,
@@ -2371,7 +2372,7 @@ class MaskRCNN():
             validation_steps=self.config.VALIDATION_STEPS,
             max_queue_size=100,
             workers=workers,
-            use_multiprocessing=True,
+            use_multiprocessing=False,
         )
         self.epoch = max(self.epoch, epochs)
 
