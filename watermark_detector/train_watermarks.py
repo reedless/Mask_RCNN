@@ -72,22 +72,32 @@ class WatermarkDataset(utils.Dataset):
         assert subset in ["train", "val"]
         dataset_dir = os.path.join(root_dataset_dir, subset, 'input')
 
-        # Get image ids from mask directory (saves time)
-        watermark_mask_dir = os.path.join(root_dataset_dir, subset, 'mask_watermark')
-        image_ids = next(os.walk(watermark_mask_dir))[2]
+        # Get image ids
+        image_ids = next(os.walk(dataset_dir))[2]
         print("Size of {} dataset: {}".format(subset, len(image_ids)))
 
         # Add images
         for image_id in image_ids:
-            watermark_mask_file = os.path.join(watermark_mask_dir, image_id)
+            watermark_mask_file = os.path.join(root_dataset_dir, subset, 'mask_watermark', image_id)
             word_mask_file = os.path.join(root_dataset_dir, subset, 'mask_word', image_id)
+
             if os.path.isfile(watermark_mask_file) and os.path.isfile(word_mask_file):
                 self.add_image(
                     "watermark",
                     image_id=image_id,
                     path=os.path.join(dataset_dir, image_id), 
                     mask_watermark=watermark_mask_file,
-                    mask_word=word_mask_file)
+                    mask_word=word_mask_file
+                )
+            else:
+                self.add_image(
+                    "watermark",
+                    image_id=image_id,
+                    path=os.path.join(dataset_dir, image_id),
+                    mask_watermark=None,
+                    mask_word=None
+                )
+
 
     def load_mask(self, image_id):
         """Generate instance masks for an image.
@@ -101,6 +111,10 @@ class WatermarkDataset(utils.Dataset):
         # Get watermark and text masks from image info
         watermark_mask_file = info['mask_watermark']
         word_mask_file = info['mask_word']
+        
+        # if mask files do not exist, return empty masks and background id
+        if watermark_mask_file is None and word_mask_file is None:
+            return np.zeros([info["height"], info["width"], 1], dtype=np.uint8), [0]
 
         # Read mask files from disk
         watermark_mask_img = cv2.imread(watermark_mask_file, cv2.IMREAD_GRAYSCALE)
@@ -165,9 +179,9 @@ def train(model):
                 epochs=30,
                 layers='heads')
 
-def test(model):
-    print("Testing not yet implemented")
-    print(model)
+# def test(model):
+#     print("Testing implemented in predict_watermarks.py")
+#     print(model)
 
 if __name__ == '__main__':
     import argparse
@@ -175,9 +189,9 @@ if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser(
         description='Train Mask R-CNN to detect balloons.')
-    parser.add_argument("command",
-                        metavar="<command>",
-                        help="'train' or 'test'")
+    # parser.add_argument("command",
+    #                     metavar="<command>",
+    #                     help="'train' or 'test'")
     parser.add_argument('--dataset', required=False,
                         default='/host/data/',
                         metavar="/path/to/balloon/dataset/",
@@ -191,35 +205,35 @@ if __name__ == '__main__':
                         help='Logs and checkpoints directory (default=/logs/)')
     args = parser.parse_args()
 
-    # Validate arguments
-    if args.command == "train":
-        assert args.dataset, "Argument --dataset is required for training"
-    elif args.command == "test":
-        assert args.weights, "Provide --weights to test"
+    # # Validate arguments
+    # if args.command == "train":
+    #     assert args.dataset, "Argument --dataset is required for training"
+    # elif args.command == "test":
+    #     assert args.weights, "Provide --weights to test"
 
     print("Weights: ", args.weights)
     print("Dataset: ", args.dataset)
     print("Logs: ", args.logs)
 
     # Configurations
-    if args.command == "train":
-        config = WatermarkConfig()
-    else:
-        class InferenceConfig(WatermarkConfig):
-            # Set batch size to 1 since we'll be running inference on
-            # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
-            GPU_COUNT = 1
-            IMAGES_PER_GPU = 1
-        config = InferenceConfig()
+    # if args.command == "train":
+    config = WatermarkConfig()
+    # else:
+    #     class InferenceConfig(WatermarkConfig):
+    #         # Set batch size to 1 since we'll be running inference on
+    #         # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
+    #         GPU_COUNT = 1
+    #         IMAGES_PER_GPU = 1
+    #     config = InferenceConfig()
     config.display()
 
     # Create model
     if args.command == "train":
         model = modellib.MaskRCNN(mode="training", config=config,
                                   model_dir=args.logs)
-    else:
-        model = modellib.MaskRCNN(mode="inference", config=config,
-                                  model_dir=args.logs)
+    # else:
+    #     model = modellib.MaskRCNN(mode="inference", config=config,
+    #                               model_dir=args.logs)
 
     # Select weights file to load
     if args.weights.lower() == "coco":
@@ -248,10 +262,10 @@ if __name__ == '__main__':
         model.load_weights(weights_path, by_name=True)
 
     # Train or evaluate
-    if args.command == "train":
-        train(model)
-    elif args.command == "test":
-        test(model)
-    else:
-        print("'{}' is not recognized. "
-              "Use 'train' or 'test'".format(args.command))
+    # if args.command == "train":
+    train(model)
+    # elif args.command == "test":
+    #     test(model)
+    # else:
+    #     print("'{}' is not recognized. "
+    #           "Use 'train' or 'test'".format(args.command))

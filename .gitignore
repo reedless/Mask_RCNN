@@ -1,3 +1,7 @@
+benchmarkv3/
+*.jpg
+*.png
+
 # Misc
 .bash_history
 
