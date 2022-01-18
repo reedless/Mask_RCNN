@@ -31,8 +31,8 @@ class WatermarkConfig(Config):
     # Give the configuration a recognizable name
     NAME = "watermark"
 
-    # We use a GPU with 32GB memory, which can fit 10 images
-    IMAGES_PER_GPU = 10
+    # We use a GPU with 32GB memory
+    IMAGES_PER_GPU = 8
 
     # Uncomment to train on 4 GPUs (default is 1)
     # GPU_COUNT = 4
