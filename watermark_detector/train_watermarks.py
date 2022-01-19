@@ -148,7 +148,7 @@ class WatermarkDataset(utils.Dataset):
         _, thresh = cv2.threshold(W, 100, 255, cv2.THRESH_BINARY)
         kernel = np.ones((3, 3), np.uint8)
         thresh = cv2.dilate(thresh, kernel, iterations=1)
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2:]
         contours = [contour for contour in contours if contour.shape[0] > 3]
 
         return contours

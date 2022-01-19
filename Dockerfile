@@ -5,7 +5,7 @@
 # pip3 install imgaug
 # pip install numpy==1.17.0
 
-FROM ubuntu:16.04
+FROM nvidia/cuda:11.3.1-devel-ubuntu16.04
 
 # Supress warnings about missing front-end. As recommended at:
 # http://stackoverflow.com/questions/22466255/is-it-possibe-to-answer-dialog-questions-when-installing-under-docker
@@ -15,7 +15,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-utils git curl vim unzip openssh-client wget \
     build-essential cmake \
-    libopenblas-dev
+    libopenblas-dev \
+    libsm6 libxext6 libglib2.0-0
 
 #
 # Python 3.5
@@ -33,7 +34,7 @@ RUN apt-get install -y --no-install-recommends libjpeg-dev zlib1g-dev
 RUN pip3 install --no-cache-dir Pillow
 # Science libraries and other common packages
 RUN pip3 install --no-cache-dir \
-    wheel numpy==1.17.0 scipy scikit-learn==0.19 scikit-image pandas matplotlib Cython requests
+    wheel numpy==1.17.0 scipy scikit-learn==0.19 scikit-image pandas matplotlib Cython requests opencv-python==3.4.1.15
 
 #
 # Jupyter Notebook
@@ -57,57 +58,57 @@ RUN pip3 install --no-cache-dir --upgrade tensorflow
 # Expose port for TensorBoard
 EXPOSE 6006
 
-#
-# OpenCV 3.4.1
-#
-# Dependencies
-RUN apt-get install -y --no-install-recommends \
-    libjpeg8-dev libtiff5-dev libjasper-dev libpng12-dev \
-    libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libgtk2.0-dev \
-    liblapacke-dev checkinstall
-# Get source from github
-RUN git clone -b 3.4.1 --depth 1 https://github.com/opencv/opencv.git /usr/local/src/opencv
-# Compile
-RUN cd /usr/local/src/opencv && mkdir build && cd build && \
-    cmake -D CMAKE_INSTALL_PREFIX=/usr/local \
-          -D BUILD_TESTS=OFF \
-          -D BUILD_PERF_TESTS=OFF \
-          -D PYTHON_DEFAULT_EXECUTABLE=$(which python3) \
-          .. && \
-    make -j"$(nproc)" && \
-    make install
+# #
+# # OpenCV 3.4.1
+# #
+# # Dependencies
+# RUN apt-get install -y --no-install-recommends \
+#     libjpeg8-dev libtiff5-dev libjasper-dev libpng12-dev \
+#     libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libgtk2.0-dev \
+#     liblapacke-dev checkinstall
+# # Get source from github
+# RUN git clone -b 3.4.1 --depth 1 https://github.com/opencv/opencv.git /usr/local/src/opencv
+# # Compile
+# RUN cd /usr/local/src/opencv && mkdir build && cd build && \
+#     cmake -D CMAKE_INSTALL_PREFIX=/usr/local \
+#           -D BUILD_TESTS=OFF \
+#           -D BUILD_PERF_TESTS=OFF \
+#           -D PYTHON_DEFAULT_EXECUTABLE=$(which python3) \
+#           .. && \
+#     make -j"$(nproc)" && \
+#     make install
 
-#
-# Caffe
-#
-# Dependencies
-RUN apt-get install -y --no-install-recommends \
-    cmake libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev \
-    libhdf5-serial-dev protobuf-compiler liblmdb-dev libgoogle-glog-dev \
-    libboost-all-dev && \
-    pip3 install lmdb
-# Get source. Use master branch because the latest stable release (rc3) misses critical fixes.
-RUN git clone -b master --depth 1 https://github.com/BVLC/caffe.git /usr/local/src/caffe
-# Python dependencies
-RUN pip3 --no-cache-dir install -r /usr/local/src/caffe/python/requirements.txt
-# Compile
-RUN cd /usr/local/src/caffe && mkdir build && cd build && \
-    cmake -D CPU_ONLY=ON -D python_version=3 -D BLAS=open -D USE_OPENCV=ON .. && \
-    make -j"$(nproc)" all && \
-    make install
-# Enivronment variables
-ENV PYTHONPATH=/usr/local/src/caffe/python:$PYTHONPATH \
-	PATH=/usr/local/src/caffe/build/tools:$PATH
-# Fix: old version of python-dateutil breaks caffe. Update it.
-RUN pip3 install --no-cache-dir python-dateutil --upgrade
+# #
+# # Caffe
+# #
+# # Dependencies
+# RUN apt-get install -y --no-install-recommends \
+#     cmake libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev \
+#     libhdf5-serial-dev protobuf-compiler liblmdb-dev libgoogle-glog-dev \
+#     libboost-all-dev && \
+#     pip3 install lmdb
+# # Get source. Use master branch because the latest stable release (rc3) misses critical fixes.
+# RUN git clone -b master --depth 1 https://github.com/BVLC/caffe.git /usr/local/src/caffe
+# # Python dependencies
+# RUN pip3 --no-cache-dir install -r /usr/local/src/caffe/python/requirements.txt
+# # Compile
+# RUN cd /usr/local/src/caffe && mkdir build && cd build && \
+#     cmake -D CPU_ONLY=ON -D python_version=3 -D BLAS=open -D USE_OPENCV=ON .. && \
+#     make -j"$(nproc)" all && \
+#     make install
+# # Enivronment variables
+# ENV PYTHONPATH=/usr/local/src/caffe/python:$PYTHONPATH \
+# 	PATH=/usr/local/src/caffe/build/tools:$PATH
+# # Fix: old version of python-dateutil breaks caffe. Update it.
+# RUN pip3 install --no-cache-dir python-dateutil --upgrade
 
-#
-# Java
-#
-# Install JDK (Java Development Kit), which includes JRE (Java Runtime
-# Environment). Or, if you just want to run Java apps, you can install
-# JRE only using: apt install default-jre
-RUN apt-get install -y --no-install-recommends default-jdk
+# #
+# # Java
+# #
+# # Install JDK (Java Development Kit), which includes JRE (Java Runtime
+# # Environment). Or, if you just want to run Java apps, you can install
+# # JRE only using: apt install default-jre
+# RUN apt-get install -y --no-install-recommends default-jdk
 
 #
 # Keras 2.1.5
