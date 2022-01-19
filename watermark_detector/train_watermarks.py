@@ -35,7 +35,7 @@ class WatermarkConfig(Config):
     IMAGES_PER_GPU = 10
 
     # Uncomment to train on 4 GPUs (default is 1)
-    GPU_COUNT = 4
+    GPU_COUNT = 2
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 2  # watermark and text
