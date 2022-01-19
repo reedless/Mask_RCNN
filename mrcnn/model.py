@@ -1492,7 +1492,7 @@ def build_rpn_targets(image_shape, anchors, gt_class_ids, gt_boxes, config):
     rpn_bbox: [num_anchors, (dy, dx, log(dh), log(dw))] Anchor bbox deltas.
     """
     # Generate negative anchors for sample that doesn't have instances
-    if gt_class_ids.shape[0]==0:
+    if gt_class_ids.shape[0] == 0:
         rpn_match = -1 * np.ones([anchors.shape[0]], dtype=np.int32)
         rpn_bbox = generate_random_rois(image_shape, \
             config.RPN_TRAIN_ANCHORS_PER_IMAGE, gt_class_ids, gt_boxes)
@@ -1616,7 +1616,7 @@ def generate_random_rois(image_shape, count, gt_class_ids, gt_boxes):
         rois_per_box = 0
     else:
         # Generate random ROIs around GT boxes (90% of count)
-        rois_per_box = int(0.9 * count / gt_boxes.shape[0])
+        rois_per_box = int(0.9 * count / gt_boxes.shape[0] + 0.000001)
         for i in range(gt_boxes.shape[0]):
             gt_y1, gt_x1, gt_y2, gt_x2 = gt_boxes[i]
             h = gt_y2 - gt_y1
