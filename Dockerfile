@@ -1,4 +1,4 @@
-# sudo docker build -t mask_rcnn -f Dockerfile .
+# sudo docker build -t mask_rcnn_v1 -f Dockerfile .
 
 # TODO:
 # pip3 install --upgrade pip
