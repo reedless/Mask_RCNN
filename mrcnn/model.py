@@ -1110,7 +1110,8 @@ def mrcnn_class_loss_graph(target_class_ids, pred_class_logits,
         for classes that are not in the dataset.
     """
     # Specify which rois in target_class_ids is zero padding or not
-    non_zeros = tf.cast(tf.greater(target_class_ids, 0), 'float32')
+    # non_zeros = tf.cast(tf.greater(target_class_ids, 0), 'float32')
+    non_zeros = tf.cast(tf.math.not_equal(tf.reduce_sum(pred_class_logits, axis=-1), 0), 'float32')
 
     # During model building, Keras calls this function with
     # target_class_ids of type float32. Unclear why. Cast it
