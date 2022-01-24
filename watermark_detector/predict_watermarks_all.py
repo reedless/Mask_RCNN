@@ -59,7 +59,7 @@ def detect_watermark_scores(model, image_path=None):
         # Color splash
         return (r['scores'])
 
-# python watermark_detector/predict_watermarks_all.py --images=/host/benchmarkv3/ --weights=/host/logs/watermark20220104T0604/mask_rcnn_watermark_0030.h5
+# python predict_watermarks_all.py --images=/host/benchmarkv3/ --weights=/host/logs/watermark20220119T0738/mask_rcnn_watermark_0030.h5
 if __name__ == '__main__':
     import argparse
 
@@ -116,7 +116,7 @@ if __name__ == '__main__':
             scores = detect_watermark_scores(model, image_path)
             dict[file] = scores
 
-    np.save('/host/watermark_detector/watermark_scores.npy', dict)
+    np.save('/host/watermark_detector/watermark_scores_2.npy', dict)
 
 
     #         if 'clean' in file:
