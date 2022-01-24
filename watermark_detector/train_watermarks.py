@@ -56,7 +56,7 @@ class WatermarkConfig(Config):
     # Problems w resizing when performing negative mining
     USE_MINI_MASK = False
 
-    USE_RPN_ROIS = False
+    USE_RPN_ROIS = True
 
 ############################################################
 #  Dataset
@@ -121,7 +121,7 @@ class WatermarkDataset(utils.Dataset):
         if watermark_mask_file is None and word_mask_file is None:
             img = cv2.imread(info['path'])
             img_width, img_height, _ = img.shape
-            return np.zeros([img_height, img_width, 1], dtype=np.uint8), np.zeros([1], dtype=np.int32)
+            return np.ones([img_height, img_width, 1], dtype=np.uint8), np.zeros([1], dtype=np.int32)
 
         # Read mask files from disk
         watermark_mask_img = cv2.imread(watermark_mask_file, cv2.IMREAD_GRAYSCALE)

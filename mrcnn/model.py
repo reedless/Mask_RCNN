@@ -2023,7 +2023,7 @@ class MaskRCNN():
             if not config.USE_RPN_ROIS:
                 # Ignore predicted ROIs and use ROIs provided as an input.
                 input_rois = KL.Input(shape=[config.POST_NMS_ROIS_TRAINING, 4],
-                                      name="input_roi", dtype=np.float32)
+                                      name="input_roi", dtype=np.int32)
                 # Normalize coordinates
                 target_rois = KL.Lambda(lambda x: norm_boxes_graph(
                     x, K.shape(input_image)[1:3]))(input_rois)
