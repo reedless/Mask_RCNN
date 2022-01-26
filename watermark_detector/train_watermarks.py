@@ -44,10 +44,10 @@ class WatermarkConfig(Config):
     STEPS_PER_EPOCH = 100
 
     # use small validation steps since the epoch is small
-    VALIDATION_STEPS = 5
+    VALIDATION_STEPS = 50
 
     # Skip detections with < 50% confidence
-    DETECTION_MIN_CONFIDENCE = 0.5
+    DETECTION_MIN_CONFIDENCE = 0.1
 
     # Backbone network architecture
     # Supported values are: resnet50, resnet101

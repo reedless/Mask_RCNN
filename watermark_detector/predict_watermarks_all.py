@@ -27,7 +27,7 @@ class InferenceConfig(Config):
     IMAGES_PER_GPU = 1
 
     # Skip detections with < 90% confidence
-    DETECTION_MIN_CONFIDENCE = 0.0002
+    DETECTION_MIN_CONFIDENCE = 0.1
 
 # def color_splash(image, mask):
 #     """Apply color splash effect.
@@ -48,18 +48,16 @@ class InferenceConfig(Config):
 #         splash = gray.astype(np.uint8)
 #     return splash
 
-def detect_watermark_scores(model, image_path=None):
+def detect_watermark(model, image_path=None):
     assert image_path
 
     if image_path:
         # Read image
         image = skimage.io.imread(image_path)
         # Detect objects
-        r = model.detect([image], verbose=1)[0]
-        # Color splash
-        return (r['scores'])
+        return model.detect([image], verbose=1)[0]
 
-# python predict_watermarks_all.py --images=/host/benchmarkv3/ --weights=/host/logs/watermark20220119T0738/mask_rcnn_watermark_0030.h5
+# python predict_watermarks_all.py --images=/host/benchmarkv3/ --weights=/host/logs/watermark20220124T0325/mask_rcnn_watermark_0030.h5
 if __name__ == '__main__':
     import argparse
 
@@ -113,8 +111,8 @@ if __name__ == '__main__':
     for file in os.listdir(args.images):
         if file.endswith(".jpg") or file.endswith(".png"):
             image_path = os.path.join(args.images, file)
-            scores = detect_watermark_scores(model, image_path)
-            dict[file] = scores
+            r = detect_watermark(model, image_path)
+            dict[file] = (r['class_ids'], r['scores'])
 
     np.save('/host/watermark_detector/watermark_scores_2.npy', dict)
 
